@@ -107,3 +107,21 @@ output "cluster_version" {
 output "cluster_endpoint" {
   value = aws_eks_cluster.this.endpoint
 }
+
+# ---------- Cluster access for my CLI user ----------
+
+resource "aws_eks_access_entry" "admin" {
+  cluster_name  = aws_eks_cluster.this.name
+  principal_arn = "arn:aws:iam::247906201098:user/tf-user01"
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "admin" {
+  cluster_name  = aws_eks_cluster.this.name
+  principal_arn = aws_eks_access_entry.admin.principal_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
