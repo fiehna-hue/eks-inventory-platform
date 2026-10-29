@@ -1,0 +1,21 @@
+# Deployed to EKS on Thu Oct 29 17:13:59 EDT 2026
+
+$ kubectl get nodes
+NAME                          STATUS   ROLES    AGE    VERSION
+ip-10-50-0-221.ec2.internal   Ready    <none>   118m   v1.36.5-eks-577a51e
+ip-10-50-1-179.ec2.internal   Ready    <none>   118m   v1.36.5-eks-577a51e
+
+$ kubectl -n inventory get pods -o wide
+NAME                   READY   STATUS    RESTARTS   AGE    IP            NODE                          NOMINATED NODE   READINESS GATES
+api-7dccbf6b55-57bnd   1/1     Running   0          90s    10.50.0.222   ip-10-50-0-221.ec2.internal   <none>           <none>
+api-7dccbf6b55-prqf5   1/1     Running   0          90s    10.50.1.116   ip-10-50-1-179.ec2.internal   <none>           <none>
+db-5bdc478bdd-gpjg4    1/1     Running   0          112s   10.50.0.128   ip-10-50-0-221.ec2.internal   <none>           <none>
+
+$ kubectl -n inventory get deploy,svc
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/api   2/2     2            2           92s
+deployment.apps/db    1/1     1            1           114s
+
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/api   ClusterIP   172.20.37.76   <none>        80/TCP     92s
+service/db    ClusterIP   172.20.48.59   <none>        5432/TCP   114s
