@@ -13,3 +13,14 @@
 - Always run a sweep after any billable stack: instances, volumes, VPCs, NAT, EIPs, load balancers, RDS, ECS, and the EKS console (the CLI user cannot list clusters).
 - Do not terminate managed node group instances by hand; the node group relaunches them. Destroy through Terraform.
 - Keep the budget alert as the safety net.
+
+## 2. Planned stop time missed because a permission was not checked first
+
+**What happened:** I planned a short session to deploy the app on EKS and agreed a destroy time. The cluster was ready on time, but I could not connect: `aws eks update-kubeconfig` failed with `AccessDeniedException` because the CLI user had no `eks:DescribeCluster` permission. The fix needed an admin console login, since the CLI user is deliberately denied from editing its own IAM policies. The stop time slipped by about 45 minutes while the cluster kept running.
+
+**Fix:** Added an inline policy allowing only `eks:DescribeCluster` on the one cluster, then deployed and tore down in the same session. By the hourly rates the run cost roughly 0.45 USD (an estimate, not yet confirmed in Cost Explorer).
+
+**Lessons:**
+- Verify permissions before starting the billing clock: `aws eks describe-cluster` on a non-existent cluster returns ResourceNotFound when allowed and AccessDenied when not, so it can be tested for free.
+- The explicit deny on self-editing IAM did its job: the CLI user could not grant itself access.
+- Destroy before any Kubernetes-created load balancer or volume exists, or delete those first; here the app used ClusterIP services and an emptyDir volume so nothing outside Terraform state was created.
